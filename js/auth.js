@@ -79,7 +79,7 @@ const Auth = (() => {
       const settings = Store.getSettings();
       settings.currentUser.role = role;
       settings.currentUser.name = role === 'admin' ? 'الاستاذ محمد' : 'Resta (عامل)';
-      Store.setSettings(settings);
+      Store.updateSettings(settings);
 
       // Reload app completely to boot into dashboard
       window.location.hash = 'dashboard';
