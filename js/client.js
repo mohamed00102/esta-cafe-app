@@ -21,6 +21,7 @@ const ClientPage = (() => {
     return renderPortal();
   }
 
+  function renderLogin() {
     const settings = Store.getSettings();
     const builder = settings.builder || {
       themeColor: '#00e5ff',
