@@ -3,7 +3,7 @@
    Offline Support + Cache
    ═══════════════════════════════════════════ */
 
-const CACHE_NAME = 'resta-cafe-v1';
+const CACHE_NAME = 'resta-cafe-v2';
 const ASSETS = [
   './',
   './index.html',
