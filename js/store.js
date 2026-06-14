@@ -14,24 +14,54 @@ const Store = (() => {
     } catch { return null; }
   }
 
-  let socket = null;
-  if (typeof io !== 'undefined') {
-    socket = io('http://localhost:3000');
-    socket.on('sync-data', (payload) => {
-      if (payload && payload.key) {
-        try {
-          localStorage.setItem(PREFIX + payload.key, JSON.stringify(payload.data));
-          if (typeof App !== 'undefined' && App.refresh) App.refresh();
-        } catch (e) {}
+  let isFirebaseInit = false;
+  const deviceId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  
+  if (typeof firebase !== 'undefined') {
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjMhh6UQjAnfSCKcWgUO9y77P0OvS1U2U",
+      authDomain: "resta-9798c.firebaseapp.com",
+      databaseURL: "https://resta-9798c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "resta-9798c",
+      storageBucket: "resta-9798c.firebasestorage.app",
+      messagingSenderId: "458126533760",
+      appId: "1:458126533760:web:64f727ea944c96b21eb265",
+      measurementId: "G-BC5LCML6YZ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Sync data from Firebase to LocalStorage
+    db.ref('store').on('child_added', (snapshot) => {
+      const key = snapshot.key;
+      const data = snapshot.val();
+      if (data && data._sender !== deviceId) {
+        localStorage.setItem(PREFIX + key, JSON.stringify(data.value));
+        if (typeof App !== 'undefined' && App.refresh) App.refresh();
       }
     });
+    
+    db.ref('store').on('child_changed', (snapshot) => {
+      const key = snapshot.key;
+      const data = snapshot.val();
+      if (data && data._sender !== deviceId) {
+        localStorage.setItem(PREFIX + key, JSON.stringify(data.value));
+        if (typeof App !== 'undefined' && App.refresh) App.refresh();
+      }
+    });
+    
+    isFirebaseInit = true;
   }
 
   function set(key, data, emit = true) {
     try {
       localStorage.setItem(PREFIX + key, JSON.stringify(data));
-      if (emit && socket) {
-        socket.emit('sync-data', { key, data });
+      if (emit && isFirebaseInit) {
+        firebase.database().ref('store/' + key).set({
+          value: data,
+          _sender: deviceId,
+          _ts: firebase.database.ServerValue.TIMESTAMP
+        });
       }
       return true;
     } catch { return false; }
@@ -120,12 +150,12 @@ const Store = (() => {
   function init() {
     if (get('db_version') !== '1.0.1') {
       localStorage.clear();
-      set('db_version', '1.0.1');
+      set('db_version', '1.0.1', false);
     }
 
     Object.keys(DEFAULTS).forEach(key => {
       if (get(key) === null) {
-        set(key, DEFAULTS[key]);
+        set(key, DEFAULTS[key], false); // false = do not emit to Firebase
       }
     });
   }
