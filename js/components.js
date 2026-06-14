@@ -98,6 +98,9 @@ const Components = (() => {
       );
     }
 
+    pages.push({ divider: true });
+    pages.push({ id: 'logout', icon: '🚪', label: 'تسجيل الخروج', action: 'Auth.logout()' });
+
     const sidebar = Utils.$('.sidebar');
     if (!sidebar) return;
 
@@ -107,8 +110,9 @@ const Components = (() => {
         html += '<div class="nav-divider"></div>';
       } else {
         const badgeCount = getPageBadge(p.id);
+        const clickAction = p.action ? p.action : `App.navigate('${p.id}')`;
         html += `
-          <div class="nav-item ${App.currentPage === p.id ? 'active' : ''}" onclick="App.navigate('${p.id}')">
+          <div class="nav-item ${App.currentPage === p.id ? 'active' : ''}" onclick="${clickAction}">
             <span class="nav-icon">${p.icon}</span>
             <span class="nav-label">${p.label}</span>
             ${badgeCount > 0 ? `<span class="nav-badge">${badgeCount}</span>` : ''}
@@ -175,6 +179,7 @@ const Components = (() => {
       { id: 'tournaments', icon: '🏆', label: 'البطولات' },
       { id: 'instagram', icon: '📸', label: 'مولّد بوستات إنستجرام' },
       { id: 'settings', icon: '⚙️', label: 'الإعدادات' },
+      { id: 'logout', icon: '🚪', label: 'تسجيل الخروج', action: 'Auth.logout()' },
     ];
 
     const menu = Utils.$('.more-menu');
@@ -182,8 +187,9 @@ const Components = (() => {
 
     let html = '';
     items.forEach(item => {
+      const clickAction = item.action ? item.action : `App.navigate('${item.id}');Components.closeMoreMenu();`;
       html += `
-        <div class="more-menu-item" onclick="App.navigate('${item.id}');Components.closeMoreMenu();">
+        <div class="more-menu-item" onclick="${clickAction}">
           <span class="more-menu-icon">${item.icon}</span>
           ${item.label}
         </div>`;
